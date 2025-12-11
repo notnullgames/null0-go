@@ -59,7 +59,7 @@ func main() {
 }
 ```
 
-You can also export [callbacks](https://notnull.games/null0/cart).
+You can also export [callbacks](https://notnull.games/null0/cart). See [callbacks cart](carts/callbacks/main.go).
 
 ## Code Generation
 

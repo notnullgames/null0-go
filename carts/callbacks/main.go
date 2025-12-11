@@ -1,56 +1,61 @@
 package main
 
-import "unsafe"
+import (
+	null0 "github.com/notnullgames/null0go/cartapi"
+)
 
-// Imported from host
-//go:wasmimport host trace
-func hostTrace(ptr uint32, len uint32)
-
-func trace(s string) {
-	ptr := unsafe.Pointer(unsafe.StringData(s))
-	hostTrace(uint32(uintptr(ptr)), uint32(len(s)))
-}
-
-// main is required by TinyGo but we won't call _start from the host
+// called to set things up
 func main() {
-}
-
-//export load
-func load() {
-	trace("[init] Callbacks example cart loaded!")
+	println("[init] Callbacks example cart loaded!")
+	println("Available types: Color, Vector, Rectangle, Dimensions")
+	println("Available enums: Key, GamepadButton, MouseButton, ImageFilter, SfxPresetType")
 }
 
 //export buttonUp
 func buttonUp(button uint32, player uint32) {
-	trace("[buttonUp] called!")
+	println("[buttonUp] called!")
 }
 
 //export buttonDown
 func buttonDown(button uint32, player uint32) {
-	trace("[buttonDown] called!")
+	println("[buttonDown] called!")
 }
 
 //export keyUp
 func keyUp(key uint32) {
-	trace("[keyUp] called!")
+	println("[keyUp] called!")
+	// Example: check if it's the space key
+	if key == uint32(null0.KEY_SPACE) {
+		println("[keyUp] Space key!")
+	}
 }
 
 //export keyDown
 func keyDown(key uint32) {
-	trace("[keyDown] called!")
+	println("[keyDown] called!")
+	// Example: check for specific keys
+	if key == uint32(null0.KEY_A) {
+		println("[keyDown] A key!")
+	} else if key == uint32(null0.KEY_ESCAPE) {
+		println("[keyDown] Escape key!")
+	}
 }
 
 //export mouseDown
 func mouseDown(button uint32) {
-	trace("[mouseDown] called!")
+	println("[mouseDown] called!")
+	// Example: check button type
+	if button == uint32(null0.MOUSE_BUTTON_LEFT) {
+		println("[mouseDown] Left click!")
+	}
 }
 
 //export mouseUp
 func mouseUp(button uint32) {
-	trace("[mouseUp] called!")
+	println("[mouseUp] called!")
 }
 
 //export mouseMoved
 func mouseMoved(x float32, y float32) {
-	trace("[mouseMoved] called!")
+	println("[mouseMoved] called!")
 }

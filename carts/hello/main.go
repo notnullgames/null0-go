@@ -1,5 +1,6 @@
 package main
 
 func main() {
-    println("hello world")
+	println("Hello from null0!")
+	println("This cart demonstrates basic functionality")
 }

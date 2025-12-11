@@ -115,6 +115,13 @@ func runCart(name string, fsys fs.FS, enableNet bool) error {
         return fmt.Errorf("instantiate WASI: %w", err)
     }
 
+    // Register null0 API
+    null0Builder := r.NewHostModuleBuilder("null0")
+    registerNull0API(null0Builder)
+    if _, err := null0Builder.Instantiate(ctx); err != nil {
+        return fmt.Errorf("instantiate null0 module: %w", err)
+    }
+
     // Host module "host" with function:
     //   (func (import "host" "trace") (param i32 i32))
     hostBuilder := r.NewHostModuleBuilder("host")

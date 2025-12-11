@@ -3,3 +3,4 @@
 /null0.exe
 *.null0
 *.wasm
+.claude/

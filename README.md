@@ -42,8 +42,7 @@ Here is a quick usage-example (go cart)
 import null0 "github.com/notnullgames/null0go/cartapi"
 
 func main() {
-  red := null0.Color{R: 255, G: 0, B: 0, A: 255}
-  null0.Clear(red)
+  null0.Clear(null0.RED)
 
   if null0.KeyDown(null0.KEY_SPACE) {
       println("Space pressed!")
@@ -55,7 +54,7 @@ func main() {
       {X: 10, Y: 50},
   }
 
-  null0.DrawPolygon(red, 3, points)
+  null0.DrawPolygon(null0.BLUE, 3, points)
   img := null0.LoadImage("player.png")
 }
 ```

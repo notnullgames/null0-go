@@ -32,6 +32,12 @@ type FuncDef struct {
 	Returns     string            `yaml:"returns"`
 }
 
+type ConstDef struct {
+	Value       interface{} `yaml:"value"`
+	Type        string      `yaml:"type"`
+	Description string      `yaml:"description"`
+}
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -77,8 +83,14 @@ func run() error {
 		return fmt.Errorf("load callbacks: %w", err)
 	}
 
+	// Load constants
+	constants, err := loadConstants(filepath.Join(baseDir, "api/constants.yml"))
+	if err != nil {
+		return fmt.Errorf("load constants: %w", err)
+	}
+
 	// Generate cart header
-	if err := generateCartHeader(types, allFuncs, filepath.Join(baseDir, "cartapi/null0.go")); err != nil {
+	if err := generateCartHeader(types, allFuncs, constants, filepath.Join(baseDir, "cartapi/null0.go")); err != nil {
 		return fmt.Errorf("generate cart header: %w", err)
 	}
 
@@ -118,6 +130,20 @@ func loadFunctions(filename string) (map[string]FuncDef, error) {
 	}
 
 	return funcs, nil
+}
+
+func loadConstants(filename string) (map[string]ConstDef, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	consts := make(map[string]ConstDef)
+	if err := yaml.Unmarshal(data, &consts); err != nil {
+		return nil, err
+	}
+
+	return consts, nil
 }
 
 // yamlTypeToGo converts YAML type to Go type for public API
@@ -297,12 +323,49 @@ func yamlTypeToWasm(yamlType string, types map[string]TypeDef) string {
 	}
 }
 
-func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, outputFile string) error {
+func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, constants map[string]ConstDef, outputFile string) error {
 	var out strings.Builder
 
 	out.WriteString("package null0\n\n")
 	out.WriteString("// This file is auto-generated from api/*.yml - DO NOT EDIT\n\n")
 	out.WriteString("import \"unsafe\"\n\n")
+
+	// Generate constants first
+	if len(constants) > 0 {
+		out.WriteString("// Constants\n\n")
+
+		// Sort constant names
+		var constNames []string
+		for name := range constants {
+			constNames = append(constNames, name)
+		}
+		sort.Strings(constNames)
+
+		for _, name := range constNames {
+			constDef := constants[name]
+
+			// Add description if available
+			if constDef.Description != "" {
+				out.WriteString(fmt.Sprintf("// %s\n", constDef.Description))
+			}
+
+			// Generate based on type
+			switch constDef.Type {
+			case "Color":
+				// Colors are structs, use var
+				values := constDef.Value.([]interface{})
+				out.WriteString(fmt.Sprintf("var %s = Color{R: %v, G: %v, B: %v, A: %v}\n\n",
+					name,
+					uint8(values[0].(int)),
+					uint8(values[1].(int)),
+					uint8(values[2].(int)),
+					uint8(values[3].(int))))
+			default:
+				// For other types, try to handle generically
+				out.WriteString(fmt.Sprintf("var %s %s = %v\n\n", name, constDef.Type, constDef.Value))
+			}
+		}
+	}
 
 	// Generate type definitions
 	out.WriteString("// Type Definitions\n\n")

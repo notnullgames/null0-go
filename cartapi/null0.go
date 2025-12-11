@@ -4,6 +4,62 @@ package null0
 
 import "unsafe"
 
+// Constants
+
+var BEIGE = Color{R: 211, G: 176, B: 131, A: 255}
+
+var BLACK = Color{R: 0, G: 0, B: 0, A: 255}
+
+// Completely transparent.
+var BLANK = Color{R: 0, G: 0, B: 0, A: 0}
+
+var BLUE = Color{R: 0, G: 121, B: 241, A: 255}
+
+var BROWN = Color{R: 127, G: 106, B: 79, A: 255}
+
+var DARKBLUE = Color{R: 0, G: 82, B: 172, A: 255}
+
+var DARKBROWN = Color{R: 76, G: 63, B: 47, A: 255}
+
+var DARKGRAY = Color{R: 80, G: 80, B: 80, A: 255}
+
+var DARKGREEN = Color{R: 0, G: 117, B: 44, A: 255}
+
+var DARKPURPLE = Color{R: 112, G: 31, B: 126, A: 255}
+
+var GOLD = Color{R: 255, G: 203, B: 0, A: 255}
+
+var GRAY = Color{R: 130, G: 130, B: 130, A: 255}
+
+var GREEN = Color{R: 0, G: 228, B: 48, A: 255}
+
+var LIGHTGRAY = Color{R: 200, G: 200, B: 200, A: 255}
+
+var LIME = Color{R: 0, G: 158, B: 47, A: 255}
+
+var MAGENTA = Color{R: 255, G: 0, B: 255, A: 255}
+
+var MAROON = Color{R: 190, G: 33, B: 55, A: 255}
+
+var ORANGE = Color{R: 255, G: 161, B: 0, A: 255}
+
+var PINK = Color{R: 255, G: 109, B: 194, A: 255}
+
+var PURPLE = Color{R: 200, G: 122, B: 255, A: 255}
+
+// A nice off-white, from Raylib.
+var RAYWHITE = Color{R: 245, G: 245, B: 245, A: 255}
+
+var RED = Color{R: 230, G: 41, B: 55, A: 255}
+
+var SKYBLUE = Color{R: 102, G: 191, B: 255, A: 255}
+
+var VIOLET = Color{R: 135, G: 60, B: 190, A: 255}
+
+var WHITE = Color{R: 255, G: 255, B: 255, A: 255}
+
+var YELLOW = Color{R: 253, G: 249, B: 0, A: 255}
+
 // Type Definitions
 
 // An RGBA color.
@@ -22,44 +78,44 @@ type Dimensions struct {
 
 // The 2D position + size of something (x/y/w/h.)
 type Rectangle struct {
-	X int32
 	Y int32
 	Width int32
 	Height int32
+	X int32
 }
 
 // Sfx parameters.
 type SfxParams struct {
-	DeltaSlide float32
-	ChangeAmount float32
-	HpfCutoffSweep float32
-	RandSeed uint32
-	WaveType int32
-	SustainPunch float32
-	StartFrequency float32
-	DutySweep float32
-	RepeatSpeed float32
-	LpfCutoff float32
-	LpfCutoffSweep float32
-	DecayTime float32
-	VibratoDepth float32
 	VibratoSpeed float32
-	ChangeSpeed float32
+	RepeatSpeed float32
+	PhaserSweep float32
+	StartFrequency float32
+	ChangeAmount float32
 	SquareDuty float32
-	PhaserOffset float32
+	DutySweep float32
 	LpfResonance float32
 	HpfCutoff float32
-	MinFrequency float32
-	PhaserSweep float32
+	HpfCutoffSweep float32
+	RandSeed uint32
+	DecayTime float32
+	DeltaSlide float32
+	VibratoDepth float32
+	LpfCutoff float32
+	LpfCutoffSweep float32
+	WaveType int32
 	AttackTime float32
 	SustainTime float32
+	SustainPunch float32
+	ChangeSpeed float32
+	PhaserOffset float32
+	MinFrequency float32
 	Slide float32
 }
 
 // The 2D position of something (x/y.)
 type Vector struct {
-	X int32
 	Y int32
+	X int32
 }
 
 // Represents a gamepad button.

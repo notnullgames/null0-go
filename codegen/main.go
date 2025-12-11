@@ -120,21 +120,18 @@ func loadFunctions(filename string) (map[string]FuncDef, error) {
 	return funcs, nil
 }
 
+// yamlTypeToGo converts YAML type to Go type for public API
 func yamlTypeToGo(yamlType string, types map[string]TypeDef) string {
 	// Handle arrays
 	if strings.HasSuffix(yamlType, "[]") {
-		return "uint32" // arrays are pointers in WASM
+		baseType := strings.TrimSuffix(yamlType, "[]")
+		return "[]" + yamlTypeToGo(baseType, types)
 	}
 
-	// Check if it's a defined type with members (struct) - pass as pointer
+	// Check if it's a defined type
 	if typeDef, ok := types[yamlType]; ok {
-		if len(typeDef.Members) > 0 {
-			// Struct - pass as pointer in WASM ABI
-			return "uint32"
-		}
-		if len(typeDef.Enums) > 0 {
-			// Enum - pass as value
-			return "uint32"
+		if len(typeDef.Members) > 0 || len(typeDef.Enums) > 0 {
+			return yamlType
 		}
 	}
 
@@ -165,12 +162,77 @@ func yamlTypeToGo(yamlType string, types map[string]TypeDef) string {
 	case "bool":
 		return "bool"
 	case "string":
+		return "string"
+	case "Image", "Font", "Sound":
+		return "uint32"
+	default:
+		return yamlType
+	}
+}
+
+// yamlTypeToWasmGo converts YAML type to Go type for WASM import (low-level)
+func yamlTypeToWasmGo(yamlType string, types map[string]TypeDef) string {
+	// Handle arrays - always pointers in WASM
+	if strings.HasSuffix(yamlType, "[]") {
+		return "uint32"
+	}
+
+	// Check if it's a struct - pass as pointer
+	if typeDef, ok := types[yamlType]; ok {
+		if len(typeDef.Members) > 0 {
+			return "uint32"
+		}
+		if len(typeDef.Enums) > 0 {
+			return "uint32"
+		}
+	}
+
+	// Map basic types (same as regular except string)
+	switch yamlType {
+	case "void":
+		return ""
+	case "i8":
+		return "int8"
+	case "i16":
+		return "int16"
+	case "i32":
+		return "int32"
+	case "i64":
+		return "int64"
+	case "u8":
+		return "uint8"
+	case "u16":
+		return "uint16"
+	case "u32":
+		return "uint32"
+	case "u64":
+		return "uint64"
+	case "f32":
+		return "float32"
+	case "f64":
+		return "float64"
+	case "bool":
+		return "bool"
+	case "string":
 		return "uint32" // pointer in WASM
 	case "Image", "Font", "Sound":
 		return "uint32"
 	default:
-		return "uint32" // unknown types default to pointer
+		return "uint32"
 	}
+}
+
+// needsMarshaling checks if a type needs pointer conversion
+func needsMarshaling(yamlType string, types map[string]TypeDef) bool {
+	if strings.HasSuffix(yamlType, "[]") {
+		return true
+	}
+	if typeDef, ok := types[yamlType]; ok {
+		if len(typeDef.Members) > 0 {
+			return true
+		}
+	}
+	return yamlType == "string"
 }
 
 func snakeToPascal(s string) string {
@@ -240,6 +302,7 @@ func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, outp
 
 	out.WriteString("package null0\n\n")
 	out.WriteString("// This file is auto-generated from api/*.yml - DO NOT EDIT\n\n")
+	out.WriteString("import \"unsafe\"\n\n")
 
 	// Generate type definitions
 	out.WriteString("// Type Definitions\n\n")
@@ -293,7 +356,7 @@ func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, outp
 	}
 
 	// Generate function imports
-	out.WriteString("// API Functions\n\n")
+	out.WriteString("// Low-level WASM imports (internal)\n\n")
 
 	// Sort function names
 	var funcNames []string
@@ -302,13 +365,54 @@ func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, outp
 	}
 	sort.Strings(funcNames)
 
+	// First, generate all low-level wasm imports (unexported)
+	for _, name := range funcNames {
+		funcDef := funcs[name]
+
+		// Build low-level parameter list (using WASM types)
+		var wasmParams []string
+		var paramNames []string
+		if funcDef.Args != nil {
+			for argName := range funcDef.Args {
+				paramNames = append(paramNames, argName)
+			}
+			sort.Strings(paramNames)
+
+			for _, argName := range paramNames {
+				argType := funcDef.Args[argName]
+				wasmGoType := yamlTypeToWasmGo(argType, types)
+				safeArgName := sanitizeParamName(argName)
+				wasmParams = append(wasmParams, fmt.Sprintf("%s %s", safeArgName, wasmGoType))
+			}
+		}
+
+		// Build return type (WASM)
+		returnType := ""
+		if funcDef.Returns != "" && funcDef.Returns != "void" {
+			returnType = " " + yamlTypeToWasmGo(funcDef.Returns, types)
+		}
+
+		// Convert to camelCase (unexported) for internal function
+		internalName := name
+		if len(name) > 0 {
+			internalName = strings.ToLower(name[:1]) + snakeToPascal(name)[1:]
+		}
+
+		// Generate the wasmimport directive
+		out.WriteString(fmt.Sprintf("//go:wasmimport null0 %s\n", name))
+		out.WriteString(fmt.Sprintf("func %s(%s)%s\n\n", internalName, strings.Join(wasmParams, ", "), returnType))
+	}
+
+	// Now generate public wrapper functions
+	out.WriteString("// Public API Functions\n\n")
+
 	for _, name := range funcNames {
 		funcDef := funcs[name]
 
 		// Generate comment
 		out.WriteString(fmt.Sprintf("// %s\n", funcDef.Description))
 
-		// Build parameter list
+		// Build public parameter list (using proper Go types)
 		var params []string
 		var paramNames []string
 		if funcDef.Args != nil {
@@ -325,18 +429,68 @@ func generateCartHeader(types map[string]TypeDef, funcs map[string]FuncDef, outp
 			}
 		}
 
-		// Build return type
-		returnType := ""
+		// Build return type (public)
+		publicReturnType := ""
 		if funcDef.Returns != "" && funcDef.Returns != "void" {
-			returnType = " " + yamlTypeToGo(funcDef.Returns, types)
+			publicReturnType = " " + yamlTypeToGo(funcDef.Returns, types)
 		}
 
-		// Convert function name to PascalCase for Go
-		goFuncName := snakeToPascal(name)
+		// Convert function name to PascalCase for public API
+		publicFuncName := snakeToPascal(name)
+		internalName := name
+		if len(name) > 0 {
+			internalName = strings.ToLower(name[:1]) + snakeToPascal(name)[1:]
+		}
 
-		// Generate the wasmimport directive with original name
-		out.WriteString(fmt.Sprintf("//go:wasmimport null0 %s\n", name))
-		out.WriteString(fmt.Sprintf("func %s(%s)%s\n\n", goFuncName, strings.Join(params, ", "), returnType))
+		out.WriteString(fmt.Sprintf("func %s(%s)%s {\n", publicFuncName, strings.Join(params, ", "), publicReturnType))
+
+		// Build call to internal function with conversions
+		var callArgs []string
+		if funcDef.Args != nil {
+			for _, argName := range paramNames {
+				argType := funcDef.Args[argName]
+				safeArgName := sanitizeParamName(argName)
+
+				if needsMarshaling(argType, types) {
+					// Need to convert to pointer
+					if argType == "string" {
+						callArgs = append(callArgs, fmt.Sprintf("uint32(uintptr(unsafe.Pointer(unsafe.StringData(%s))))", safeArgName))
+					} else {
+						callArgs = append(callArgs, fmt.Sprintf("uint32(uintptr(unsafe.Pointer(&%s)))", safeArgName))
+					}
+				} else {
+					// Check if it's an enum type (needs cast to uint32)
+					if typeDef, ok := types[argType]; ok && len(typeDef.Enums) > 0 {
+						callArgs = append(callArgs, fmt.Sprintf("uint32(%s)", safeArgName))
+					} else {
+						// Direct pass
+						callArgs = append(callArgs, safeArgName)
+					}
+				}
+			}
+		}
+
+		// Generate the call
+		if publicReturnType != "" {
+			// Has return value
+			if needsMarshaling(funcDef.Returns, types) {
+				// Return value needs unmarshaling (e.g., structs returned by pointer)
+				out.WriteString(fmt.Sprintf("\tvar result %s\n", yamlTypeToGo(funcDef.Returns, types)))
+				out.WriteString(fmt.Sprintf("\tresultPtr := %s(%s)\n", internalName, strings.Join(callArgs, ", ")))
+				out.WriteString(fmt.Sprintf("\tif resultPtr != 0 {\n"))
+				out.WriteString(fmt.Sprintf("\t\tresult = *(*%s)(unsafe.Pointer(uintptr(resultPtr)))\n", yamlTypeToGo(funcDef.Returns, types)))
+				out.WriteString(fmt.Sprintf("\t}\n"))
+				out.WriteString(fmt.Sprintf("\treturn result\n"))
+			} else {
+				// Direct return
+				out.WriteString(fmt.Sprintf("\treturn %s(%s)\n", internalName, strings.Join(callArgs, ", ")))
+			}
+		} else {
+			// No return value
+			out.WriteString(fmt.Sprintf("\t%s(%s)\n", internalName, strings.Join(callArgs, ", ")))
+		}
+
+		out.WriteString("}\n\n")
 	}
 
 	// Write to file

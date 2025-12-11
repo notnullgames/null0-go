@@ -2,6 +2,8 @@ package null0
 
 // This file is auto-generated from api/*.yml - DO NOT EDIT
 
+import "unsafe"
+
 // Type Definitions
 
 // An RGBA color.
@@ -28,30 +30,30 @@ type Rectangle struct {
 
 // Sfx parameters.
 type SfxParams struct {
+	DeltaSlide float32
+	ChangeAmount float32
+	HpfCutoffSweep float32
+	RandSeed uint32
 	WaveType int32
-	MinFrequency float32
+	SustainPunch float32
+	StartFrequency float32
+	DutySweep float32
+	RepeatSpeed float32
+	LpfCutoff float32
+	LpfCutoffSweep float32
+	DecayTime float32
+	VibratoDepth float32
 	VibratoSpeed float32
 	ChangeSpeed float32
+	SquareDuty float32
 	PhaserOffset float32
 	LpfResonance float32
 	HpfCutoff float32
-	AttackTime float32
-	StartFrequency float32
-	VibratoDepth float32
-	ChangeAmount float32
-	LpfCutoff float32
-	SustainTime float32
-	SustainPunch float32
-	Slide float32
-	DeltaSlide float32
-	SquareDuty float32
-	DutySweep float32
+	MinFrequency float32
 	PhaserSweep float32
-	HpfCutoffSweep float32
-	RandSeed uint32
-	DecayTime float32
-	RepeatSpeed float32
-	LpfCutoffSweep float32
+	AttackTime float32
+	SustainTime float32
+	Slide float32
 }
 
 // The 2D position of something (x/y.)
@@ -244,401 +246,824 @@ const (
 	SFX_SYNTH SfxPresetType = 7
 )
 
-// API Functions
+// Low-level WASM imports (internal)
+
+//go:wasmimport null0 clear
+func clear(color uint32)
+
+//go:wasmimport null0 clear_image
+func clearImage(color uint32, destination uint32)
+
+//go:wasmimport null0 current_time
+func currentTime() uint64
+
+//go:wasmimport null0 delta_time
+func deltaTime() float32
+
+//go:wasmimport null0 draw_arc
+func drawArc(centerX int32, centerY int32, color uint32, endAngle float32, radius float32, segments int32, startAngle float32)
+
+//go:wasmimport null0 draw_arc_outline
+func drawArcOutline(centerX int32, centerY int32, color uint32, endAngle float32, radius float32, segments int32, startAngle float32, thickness int32)
+
+//go:wasmimport null0 draw_circle
+func drawCircle(centerX int32, centerY int32, color uint32, radius int32)
+
+//go:wasmimport null0 draw_circle_on_image
+func drawCircleOnImage(centerX int32, centerY int32, color uint32, destination uint32, radius int32)
+
+//go:wasmimport null0 draw_circle_outline
+func drawCircleOutline(centerX int32, centerY int32, color uint32, radius int32, thickness int32)
+
+//go:wasmimport null0 draw_circle_outline_on_image
+func drawCircleOutlineOnImage(centerX int32, centerY int32, color uint32, destination uint32, radius int32, thickness int32)
+
+//go:wasmimport null0 draw_ellipse
+func drawEllipse(centerX int32, centerY int32, color uint32, radiusX int32, radiusY int32)
+
+//go:wasmimport null0 draw_ellipse_on_image
+func drawEllipseOnImage(centerX int32, centerY int32, color uint32, destination uint32, radiusX int32, radiusY int32)
+
+//go:wasmimport null0 draw_ellipse_outline
+func drawEllipseOutline(centerX int32, centerY int32, color uint32, radiusX int32, radiusY int32, thickness int32)
+
+//go:wasmimport null0 draw_ellipse_outline_on_image
+func drawEllipseOutlineOnImage(centerX int32, centerY int32, color uint32, destination uint32, radiusX int32, radiusY int32, thickness int32)
+
+//go:wasmimport null0 draw_image
+func drawImage(posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_flipped
+func drawImageFlipped(flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_flipped_on_image
+func drawImageFlippedOnImage(destination uint32, flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_on_image
+func drawImageOnImage(destination uint32, posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_rotated
+func drawImageRotated(degrees float32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_rotated_on_image
+func drawImageRotatedOnImage(degrees float32, destination uint32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, src uint32)
+
+//go:wasmimport null0 draw_image_scaled
+func drawImageScaled(filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32)
+
+//go:wasmimport null0 draw_image_scaled_on_image
+func drawImageScaledOnImage(destination uint32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32)
+
+//go:wasmimport null0 draw_image_tint
+func drawImageTint(posX int32, posY int32, src uint32, tint uint32)
+
+//go:wasmimport null0 draw_image_tint_on_image
+func drawImageTintOnImage(destination uint32, posX int32, posY int32, src uint32, tint uint32)
+
+//go:wasmimport null0 draw_line
+func drawLine(color uint32, endPosX int32, endPosY int32, startPosX int32, startPosY int32)
+
+//go:wasmimport null0 draw_line_on_image
+func drawLineOnImage(color uint32, destination uint32, endPosX int32, endPosY int32, startPosX int32, startPosY int32)
+
+//go:wasmimport null0 draw_point
+func drawPoint(color uint32, x int32, y int32)
+
+//go:wasmimport null0 draw_point_on_image
+func drawPointOnImage(color uint32, destination uint32, x int32, y int32)
+
+//go:wasmimport null0 draw_polygon
+func drawPolygon(color uint32, numPoints int32, points uint32)
+
+//go:wasmimport null0 draw_polygon_on_image
+func drawPolygonOnImage(color uint32, destination uint32, numPoints int32, points uint32)
+
+//go:wasmimport null0 draw_polygon_outline
+func drawPolygonOutline(color uint32, numPoints int32, points uint32, thickness int32)
+
+//go:wasmimport null0 draw_polygon_outline_on_image
+func drawPolygonOutlineOnImage(color uint32, destination uint32, numPoints int32, points uint32, thickness int32)
+
+//go:wasmimport null0 draw_rectangle
+func drawRectangle(color uint32, height int32, posX int32, posY int32, width int32)
+
+//go:wasmimport null0 draw_rectangle_on_image
+func drawRectangleOnImage(color uint32, destination uint32, height int32, posX int32, posY int32, width int32)
+
+//go:wasmimport null0 draw_rectangle_outline
+func drawRectangleOutline(color uint32, height int32, posX int32, posY int32, thickness int32, width int32)
+
+//go:wasmimport null0 draw_rectangle_outline_on_image
+func drawRectangleOutlineOnImage(color uint32, destination uint32, height int32, posX int32, posY int32, thickness int32, width int32)
+
+//go:wasmimport null0 draw_rectangle_rounded
+func drawRectangleRounded(color uint32, cornerRadius int32, height int32, width int32, x int32, y int32)
+
+//go:wasmimport null0 draw_rectangle_rounded_on_image
+func drawRectangleRoundedOnImage(color uint32, cornerRadius int32, destination uint32, height int32, width int32, x int32, y int32)
+
+//go:wasmimport null0 draw_rectangle_rounded_outline
+func drawRectangleRoundedOutline(color uint32, cornerRadius int32, height int32, thickness int32, width int32, x int32, y int32)
+
+//go:wasmimport null0 draw_rectangle_rounded_outline_on_image
+func drawRectangleRoundedOutlineOnImage(color uint32, cornerRadius int32, destination uint32, height int32, thickness int32, width int32, x int32, y int32)
+
+//go:wasmimport null0 draw_text
+func drawText(color uint32, font uint32, posX int32, posY int32, text uint32)
+
+//go:wasmimport null0 draw_text_on_image
+func drawTextOnImage(color uint32, destination uint32, font uint32, posX int32, posY int32, text uint32)
+
+//go:wasmimport null0 draw_triangle
+func drawTriangle(color uint32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+
+//go:wasmimport null0 draw_triangle_on_image
+func drawTriangleOnImage(color uint32, destination uint32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+
+//go:wasmimport null0 draw_triangle_outline
+func drawTriangleOutline(color uint32, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+
+//go:wasmimport null0 draw_triangle_outline_on_image
+func drawTriangleOutlineOnImage(color uint32, destination uint32, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+
+//go:wasmimport null0 font_copy
+func fontCopy(font uint32) uint32
+
+//go:wasmimport null0 font_scale
+func fontScale(filter uint32, font uint32, scaleX float32, scaleY float32) uint32
+
+//go:wasmimport null0 gamepad_button_down
+func gamepadButtonDown(button uint32, gamepad int32) bool
+
+//go:wasmimport null0 gamepad_button_pressed
+func gamepadButtonPressed(button uint32, gamepad int32) bool
+
+//go:wasmimport null0 gamepad_button_released
+func gamepadButtonReleased(button uint32, gamepad int32) bool
+
+//go:wasmimport null0 image_alpha_border
+func imageAlphaBorder(image uint32, threshold float32) uint32
+
+//go:wasmimport null0 image_alpha_crop
+func imageAlphaCrop(image uint32, threshold float32)
+
+//go:wasmimport null0 image_alpha_mask
+func imageAlphaMask(alphaMask uint32, image uint32, posX int32, posY int32)
+
+//go:wasmimport null0 image_color_brightness
+func imageColorBrightness(factor float32, image uint32)
+
+//go:wasmimport null0 image_color_contrast
+func imageColorContrast(contrast float32, image uint32)
+
+//go:wasmimport null0 image_color_fade
+func imageColorFade(alpha float32, image uint32)
+
+//go:wasmimport null0 image_color_invert
+func imageColorInvert(image uint32)
+
+//go:wasmimport null0 image_color_replace
+func imageColorReplace(color uint32, image uint32, replace uint32)
+
+//go:wasmimport null0 image_color_tint
+func imageColorTint(color uint32, image uint32)
+
+//go:wasmimport null0 image_copy
+func imageCopy(image uint32) uint32
+
+//go:wasmimport null0 image_crop
+func imageCrop(height int32, image uint32, width int32, x int32, y int32)
+
+//go:wasmimport null0 image_flip
+func imageFlip(horizontal bool, image uint32, vertical bool)
+
+//go:wasmimport null0 image_gradient
+func imageGradient(bottomLeft uint32, bottomRight uint32, height int32, topLeft uint32, topRight uint32, width int32) uint32
+
+//go:wasmimport null0 image_resize
+func imageResize(filter uint32, image uint32, newHeight int32, newWidth int32) uint32
+
+//go:wasmimport null0 image_rotate
+func imageRotate(degrees float32, filter uint32, image uint32) uint32
+
+//go:wasmimport null0 image_scale
+func imageScale(filter uint32, image uint32, scaleX float32, scaleY float32) uint32
+
+//go:wasmimport null0 image_subimage
+func imageSubimage(height int32, image uint32, width int32, x int32, y int32) uint32
+
+//go:wasmimport null0 key_down
+func keyDown(key uint32) bool
+
+//go:wasmimport null0 key_pressed
+func keyPressed(key uint32) bool
+
+//go:wasmimport null0 key_released
+func keyReleased(key uint32) bool
+
+//go:wasmimport null0 key_up
+func keyUp(key uint32) bool
+
+//go:wasmimport null0 load_font_bmf
+func loadFontBmf(characters uint32, filename uint32) uint32
+
+//go:wasmimport null0 load_font_bmf_from_image
+func loadFontBmfFromImage(characters uint32, image uint32) uint32
+
+//go:wasmimport null0 load_font_ttf
+func loadFontTtf(filename uint32, fontSize int32) uint32
+
+//go:wasmimport null0 load_font_tty
+func loadFontTty(characters uint32, filename uint32, glyphHeight int32, glyphWidth int32) uint32
+
+//go:wasmimport null0 load_font_tty_from_image
+func loadFontTtyFromImage(characters uint32, glyphHeight int32, glyphWidth int32, image uint32) uint32
+
+//go:wasmimport null0 load_image
+func loadImage(filename uint32) uint32
+
+//go:wasmimport null0 load_sound
+func loadSound(filename uint32) uint32
+
+//go:wasmimport null0 measure_image
+func measureImage(image uint32) uint32
+
+//go:wasmimport null0 measure_text
+func measureText(font uint32, text uint32, textLength int32) uint32
+
+//go:wasmimport null0 mouse_button_down
+func mouseButtonDown(button uint32) bool
+
+//go:wasmimport null0 mouse_button_pressed
+func mouseButtonPressed(button uint32) bool
+
+//go:wasmimport null0 mouse_button_released
+func mouseButtonReleased(button uint32) bool
+
+//go:wasmimport null0 mouse_button_up
+func mouseButtonUp(button uint32) bool
+
+//go:wasmimport null0 mouse_position
+func mousePosition() uint32
+
+//go:wasmimport null0 new_image
+func newImage(color uint32, height int32, width int32) uint32
+
+//go:wasmimport null0 play_sound
+func playSound(loop bool, sound uint32)
+
+//go:wasmimport null0 random_int
+func randomInt(max int32, min int32) int32
+
+//go:wasmimport null0 random_seed_get
+func randomSeedGet() uint64
+
+//go:wasmimport null0 random_seed_set
+func randomSeedSet(seed uint64)
+
+//go:wasmimport null0 save_image
+func saveImage(filename uint32, image uint32)
+
+//go:wasmimport null0 sfx_generate
+func sfxGenerate(type_ uint32) uint32
+
+//go:wasmimport null0 sfx_sound
+func sfxSound(params uint32) uint32
+
+//go:wasmimport null0 stop_sound
+func stopSound(sound uint32)
+
+//go:wasmimport null0 tts_sound
+func ttsSound(mouth int32, phonetic bool, pitch int32, sing bool, speed int32, text uint32, throat int32) uint32
+
+//go:wasmimport null0 unload_font
+func unloadFont(font uint32)
+
+//go:wasmimport null0 unload_image
+func unloadImage(image uint32)
+
+//go:wasmimport null0 unload_sound
+func unloadSound(sound uint32)
+
+// Public API Functions
 
 // Clear the screen.
-//go:wasmimport null0 clear
-func Clear(color uint32)
+func Clear(color Color) {
+	clear(uint32(uintptr(unsafe.Pointer(&color))))
+}
 
 // Clear an image.
-//go:wasmimport null0 clear_image
-func ClearImage(color uint32, destination uint32)
+func ClearImage(color Color, destination uint32) {
+	clearImage(uint32(uintptr(unsafe.Pointer(&color))), destination)
+}
 
 // Get system-time (ms) since unix epoch.
-//go:wasmimport null0 current_time
-func CurrentTime() uint64
+func CurrentTime() uint64 {
+	return currentTime()
+}
 
 // Get the change in time (seconds) since the last update run.
-//go:wasmimport null0 delta_time
-func DeltaTime() float32
+func DeltaTime() float32 {
+	return deltaTime()
+}
 
 // Draw a filled arc on the screen.
-//go:wasmimport null0 draw_arc
-func DrawArc(centerX int32, centerY int32, color uint32, endAngle float32, radius float32, segments int32, startAngle float32)
+func DrawArc(centerX int32, centerY int32, color Color, endAngle float32, radius float32, segments int32, startAngle float32) {
+	drawArc(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), endAngle, radius, segments, startAngle)
+}
 
 // Draw a outlined (with thickness) arc on the screen.
-//go:wasmimport null0 draw_arc_outline
-func DrawArcOutline(centerX int32, centerY int32, color uint32, endAngle float32, radius float32, segments int32, startAngle float32, thickness int32)
+func DrawArcOutline(centerX int32, centerY int32, color Color, endAngle float32, radius float32, segments int32, startAngle float32, thickness int32) {
+	drawArcOutline(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), endAngle, radius, segments, startAngle, thickness)
+}
 
 // Draw a filled circle on the screen.
-//go:wasmimport null0 draw_circle
-func DrawCircle(centerX int32, centerY int32, color uint32, radius int32)
+func DrawCircle(centerX int32, centerY int32, color Color, radius int32) {
+	drawCircle(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), radius)
+}
 
 // Draw a circle on an image.
-//go:wasmimport null0 draw_circle_on_image
-func DrawCircleOnImage(centerX int32, centerY int32, color uint32, destination uint32, radius int32)
+func DrawCircleOnImage(centerX int32, centerY int32, color Color, destination uint32, radius int32) {
+	drawCircleOnImage(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), destination, radius)
+}
 
 // Draw a outlined (with thickness) circle on the screen.
-//go:wasmimport null0 draw_circle_outline
-func DrawCircleOutline(centerX int32, centerY int32, color uint32, radius int32, thickness int32)
+func DrawCircleOutline(centerX int32, centerY int32, color Color, radius int32, thickness int32) {
+	drawCircleOutline(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), radius, thickness)
+}
 
 // Draw a outlined (with thickness) circle on an image.
-//go:wasmimport null0 draw_circle_outline_on_image
-func DrawCircleOutlineOnImage(centerX int32, centerY int32, color uint32, destination uint32, radius int32, thickness int32)
+func DrawCircleOutlineOnImage(centerX int32, centerY int32, color Color, destination uint32, radius int32, thickness int32) {
+	drawCircleOutlineOnImage(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), destination, radius, thickness)
+}
 
 // Draw a filled ellipse on the screen.
-//go:wasmimport null0 draw_ellipse
-func DrawEllipse(centerX int32, centerY int32, color uint32, radiusX int32, radiusY int32)
+func DrawEllipse(centerX int32, centerY int32, color Color, radiusX int32, radiusY int32) {
+	drawEllipse(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), radiusX, radiusY)
+}
 
 // Draw a filled ellipse on an image.
-//go:wasmimport null0 draw_ellipse_on_image
-func DrawEllipseOnImage(centerX int32, centerY int32, color uint32, destination uint32, radiusX int32, radiusY int32)
+func DrawEllipseOnImage(centerX int32, centerY int32, color Color, destination uint32, radiusX int32, radiusY int32) {
+	drawEllipseOnImage(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), destination, radiusX, radiusY)
+}
 
 // Draw a outlined (with thickness) ellipse on the screen.
-//go:wasmimport null0 draw_ellipse_outline
-func DrawEllipseOutline(centerX int32, centerY int32, color uint32, radiusX int32, radiusY int32, thickness int32)
+func DrawEllipseOutline(centerX int32, centerY int32, color Color, radiusX int32, radiusY int32, thickness int32) {
+	drawEllipseOutline(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), radiusX, radiusY, thickness)
+}
 
 // Draw a outlined (with thickness) ellipse on an image.
-//go:wasmimport null0 draw_ellipse_outline_on_image
-func DrawEllipseOutlineOnImage(centerX int32, centerY int32, color uint32, destination uint32, radiusX int32, radiusY int32, thickness int32)
+func DrawEllipseOutlineOnImage(centerX int32, centerY int32, color Color, destination uint32, radiusX int32, radiusY int32, thickness int32) {
+	drawEllipseOutlineOnImage(centerX, centerY, uint32(uintptr(unsafe.Pointer(&color))), destination, radiusX, radiusY, thickness)
+}
 
 // Draw an image on the screen.
-//go:wasmimport null0 draw_image
-func DrawImage(posX int32, posY int32, src uint32)
+func DrawImage(posX int32, posY int32, src uint32) {
+	drawImage(posX, posY, src)
+}
 
 // Draw an image, flipped, on the screen.
-//go:wasmimport null0 draw_image_flipped
-func DrawImageFlipped(flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32)
+func DrawImageFlipped(flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32) {
+	drawImageFlipped(flipDiagonal, flipHorizontal, flipVertical, posX, posY, src)
+}
 
 // Draw an image, flipped, on an image.
-//go:wasmimport null0 draw_image_flipped_on_image
-func DrawImageFlippedOnImage(destination uint32, flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32)
+func DrawImageFlippedOnImage(destination uint32, flipDiagonal bool, flipHorizontal bool, flipVertical bool, posX int32, posY int32, src uint32) {
+	drawImageFlippedOnImage(destination, flipDiagonal, flipHorizontal, flipVertical, posX, posY, src)
+}
 
 // Draw an image on an image.
-//go:wasmimport null0 draw_image_on_image
-func DrawImageOnImage(destination uint32, posX int32, posY int32, src uint32)
+func DrawImageOnImage(destination uint32, posX int32, posY int32, src uint32) {
+	drawImageOnImage(destination, posX, posY, src)
+}
 
 // Draw an image, rotated, on the screen.
-//go:wasmimport null0 draw_image_rotated
-func DrawImageRotated(degrees float32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, src uint32)
+func DrawImageRotated(degrees float32, filter ImageFilter, offsetX float32, offsetY float32, posX int32, posY int32, src uint32) {
+	drawImageRotated(degrees, uint32(filter), offsetX, offsetY, posX, posY, src)
+}
 
 // Draw an image, rotated, on an image.
-//go:wasmimport null0 draw_image_rotated_on_image
-func DrawImageRotatedOnImage(degrees float32, destination uint32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, src uint32)
+func DrawImageRotatedOnImage(degrees float32, destination uint32, filter ImageFilter, offsetX float32, offsetY float32, posX int32, posY int32, src uint32) {
+	drawImageRotatedOnImage(degrees, destination, uint32(filter), offsetX, offsetY, posX, posY, src)
+}
 
 // Draw an image, scaled, on the screen.
-//go:wasmimport null0 draw_image_scaled
-func DrawImageScaled(filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32)
+func DrawImageScaled(filter ImageFilter, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32) {
+	drawImageScaled(uint32(filter), offsetX, offsetY, posX, posY, scaleX, scaleY, src)
+}
 
 // Draw an image, scaled, on an image.
-//go:wasmimport null0 draw_image_scaled_on_image
-func DrawImageScaledOnImage(destination uint32, filter uint32, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32)
+func DrawImageScaledOnImage(destination uint32, filter ImageFilter, offsetX float32, offsetY float32, posX int32, posY int32, scaleX float32, scaleY float32, src uint32) {
+	drawImageScaledOnImage(destination, uint32(filter), offsetX, offsetY, posX, posY, scaleX, scaleY, src)
+}
 
 // Draw a tinted image on the screen.
-//go:wasmimport null0 draw_image_tint
-func DrawImageTint(posX int32, posY int32, src uint32, tint uint32)
+func DrawImageTint(posX int32, posY int32, src uint32, tint Color) {
+	drawImageTint(posX, posY, src, uint32(uintptr(unsafe.Pointer(&tint))))
+}
 
 // Draw a tinted image on an image.
-//go:wasmimport null0 draw_image_tint_on_image
-func DrawImageTintOnImage(destination uint32, posX int32, posY int32, src uint32, tint uint32)
+func DrawImageTintOnImage(destination uint32, posX int32, posY int32, src uint32, tint Color) {
+	drawImageTintOnImage(destination, posX, posY, src, uint32(uintptr(unsafe.Pointer(&tint))))
+}
 
 // Draw a line on the screen.
-//go:wasmimport null0 draw_line
-func DrawLine(color uint32, endPosX int32, endPosY int32, startPosX int32, startPosY int32)
+func DrawLine(color Color, endPosX int32, endPosY int32, startPosX int32, startPosY int32) {
+	drawLine(uint32(uintptr(unsafe.Pointer(&color))), endPosX, endPosY, startPosX, startPosY)
+}
 
 // Draw a line on an image.
-//go:wasmimport null0 draw_line_on_image
-func DrawLineOnImage(color uint32, destination uint32, endPosX int32, endPosY int32, startPosX int32, startPosY int32)
+func DrawLineOnImage(color Color, destination uint32, endPosX int32, endPosY int32, startPosX int32, startPosY int32) {
+	drawLineOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, endPosX, endPosY, startPosX, startPosY)
+}
 
 // Draw a single pixel on the screen.
-//go:wasmimport null0 draw_point
-func DrawPoint(color uint32, x int32, y int32)
+func DrawPoint(color Color, x int32, y int32) {
+	drawPoint(uint32(uintptr(unsafe.Pointer(&color))), x, y)
+}
 
 // Draw a single pixel on an image.
-//go:wasmimport null0 draw_point_on_image
-func DrawPointOnImage(color uint32, destination uint32, x int32, y int32)
+func DrawPointOnImage(color Color, destination uint32, x int32, y int32) {
+	drawPointOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, x, y)
+}
 
 // Draw a filled polygon on the screen.
-//go:wasmimport null0 draw_polygon
-func DrawPolygon(color uint32, numPoints int32, points uint32)
+func DrawPolygon(color Color, numPoints int32, points []Vector) {
+	drawPolygon(uint32(uintptr(unsafe.Pointer(&color))), numPoints, uint32(uintptr(unsafe.Pointer(&points))))
+}
 
 // Draw a filled polygon on an image.
-//go:wasmimport null0 draw_polygon_on_image
-func DrawPolygonOnImage(color uint32, destination uint32, numPoints int32, points uint32)
+func DrawPolygonOnImage(color Color, destination uint32, numPoints int32, points []Vector) {
+	drawPolygonOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, numPoints, uint32(uintptr(unsafe.Pointer(&points))))
+}
 
 // Draw a outlined (with thickness) polygon on the screen.
-//go:wasmimport null0 draw_polygon_outline
-func DrawPolygonOutline(color uint32, numPoints int32, points uint32, thickness int32)
+func DrawPolygonOutline(color Color, numPoints int32, points []Vector, thickness int32) {
+	drawPolygonOutline(uint32(uintptr(unsafe.Pointer(&color))), numPoints, uint32(uintptr(unsafe.Pointer(&points))), thickness)
+}
 
 // Draw a outlined (with thickness) polygon on an image.
-//go:wasmimport null0 draw_polygon_outline_on_image
-func DrawPolygonOutlineOnImage(color uint32, destination uint32, numPoints int32, points uint32, thickness int32)
+func DrawPolygonOutlineOnImage(color Color, destination uint32, numPoints int32, points []Vector, thickness int32) {
+	drawPolygonOutlineOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, numPoints, uint32(uintptr(unsafe.Pointer(&points))), thickness)
+}
 
 // Draw a filled rectangle on the screen.
-//go:wasmimport null0 draw_rectangle
-func DrawRectangle(color uint32, height int32, posX int32, posY int32, width int32)
+func DrawRectangle(color Color, height int32, posX int32, posY int32, width int32) {
+	drawRectangle(uint32(uintptr(unsafe.Pointer(&color))), height, posX, posY, width)
+}
 
 // Draw a filled rectangle on an image.
-//go:wasmimport null0 draw_rectangle_on_image
-func DrawRectangleOnImage(color uint32, destination uint32, height int32, posX int32, posY int32, width int32)
+func DrawRectangleOnImage(color Color, destination uint32, height int32, posX int32, posY int32, width int32) {
+	drawRectangleOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, height, posX, posY, width)
+}
 
 // Draw a outlined (with thickness) rectangle on the screen.
-//go:wasmimport null0 draw_rectangle_outline
-func DrawRectangleOutline(color uint32, height int32, posX int32, posY int32, thickness int32, width int32)
+func DrawRectangleOutline(color Color, height int32, posX int32, posY int32, thickness int32, width int32) {
+	drawRectangleOutline(uint32(uintptr(unsafe.Pointer(&color))), height, posX, posY, thickness, width)
+}
 
 // Draw a outlined (with thickness) rectangle on an image.
-//go:wasmimport null0 draw_rectangle_outline_on_image
-func DrawRectangleOutlineOnImage(color uint32, destination uint32, height int32, posX int32, posY int32, thickness int32, width int32)
+func DrawRectangleOutlineOnImage(color Color, destination uint32, height int32, posX int32, posY int32, thickness int32, width int32) {
+	drawRectangleOutlineOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, height, posX, posY, thickness, width)
+}
 
 // Draw a filled round-rectangle on the screen.
-//go:wasmimport null0 draw_rectangle_rounded
-func DrawRectangleRounded(color uint32, cornerRadius int32, height int32, width int32, x int32, y int32)
+func DrawRectangleRounded(color Color, cornerRadius int32, height int32, width int32, x int32, y int32) {
+	drawRectangleRounded(uint32(uintptr(unsafe.Pointer(&color))), cornerRadius, height, width, x, y)
+}
 
 // Draw a filled round-rectangle on an image.
-//go:wasmimport null0 draw_rectangle_rounded_on_image
-func DrawRectangleRoundedOnImage(color uint32, cornerRadius int32, destination uint32, height int32, width int32, x int32, y int32)
+func DrawRectangleRoundedOnImage(color Color, cornerRadius int32, destination uint32, height int32, width int32, x int32, y int32) {
+	drawRectangleRoundedOnImage(uint32(uintptr(unsafe.Pointer(&color))), cornerRadius, destination, height, width, x, y)
+}
 
 // Draw a outlined (with thickness) round-rectangle on the screen.
-//go:wasmimport null0 draw_rectangle_rounded_outline
-func DrawRectangleRoundedOutline(color uint32, cornerRadius int32, height int32, thickness int32, width int32, x int32, y int32)
+func DrawRectangleRoundedOutline(color Color, cornerRadius int32, height int32, thickness int32, width int32, x int32, y int32) {
+	drawRectangleRoundedOutline(uint32(uintptr(unsafe.Pointer(&color))), cornerRadius, height, thickness, width, x, y)
+}
 
 // Draw a outlined (with thickness) round-rectangle on an image.
-//go:wasmimport null0 draw_rectangle_rounded_outline_on_image
-func DrawRectangleRoundedOutlineOnImage(color uint32, cornerRadius int32, destination uint32, height int32, thickness int32, width int32, x int32, y int32)
+func DrawRectangleRoundedOutlineOnImage(color Color, cornerRadius int32, destination uint32, height int32, thickness int32, width int32, x int32, y int32) {
+	drawRectangleRoundedOutlineOnImage(uint32(uintptr(unsafe.Pointer(&color))), cornerRadius, destination, height, thickness, width, x, y)
+}
 
 // Draw some text on the screen.
-//go:wasmimport null0 draw_text
-func DrawText(color uint32, font uint32, posX int32, posY int32, text uint32)
+func DrawText(color Color, font uint32, posX int32, posY int32, text string) {
+	drawText(uint32(uintptr(unsafe.Pointer(&color))), font, posX, posY, uint32(uintptr(unsafe.Pointer(unsafe.StringData(text)))))
+}
 
 // Draw some text on an image.
-//go:wasmimport null0 draw_text_on_image
-func DrawTextOnImage(color uint32, destination uint32, font uint32, posX int32, posY int32, text uint32)
+func DrawTextOnImage(color Color, destination uint32, font uint32, posX int32, posY int32, text string) {
+	drawTextOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, font, posX, posY, uint32(uintptr(unsafe.Pointer(unsafe.StringData(text)))))
+}
 
 // Draw a filled triangle on the screen.
-//go:wasmimport null0 draw_triangle
-func DrawTriangle(color uint32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+func DrawTriangle(color Color, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32) {
+	drawTriangle(uint32(uintptr(unsafe.Pointer(&color))), x1, x2, x3, y1, y2, y3)
+}
 
 // Draw a filled triangle on an image.
-//go:wasmimport null0 draw_triangle_on_image
-func DrawTriangleOnImage(color uint32, destination uint32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+func DrawTriangleOnImage(color Color, destination uint32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32) {
+	drawTriangleOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, x1, x2, x3, y1, y2, y3)
+}
 
 // Draw a outlined (with thickness) triangle on the screen.
-//go:wasmimport null0 draw_triangle_outline
-func DrawTriangleOutline(color uint32, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+func DrawTriangleOutline(color Color, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32) {
+	drawTriangleOutline(uint32(uintptr(unsafe.Pointer(&color))), thickness, x1, x2, x3, y1, y2, y3)
+}
 
 // Draw a outlined (with thickness) triangle on an image.
-//go:wasmimport null0 draw_triangle_outline_on_image
-func DrawTriangleOutlineOnImage(color uint32, destination uint32, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32)
+func DrawTriangleOutlineOnImage(color Color, destination uint32, thickness int32, x1 int32, x2 int32, x3 int32, y1 int32, y2 int32, y3 int32) {
+	drawTriangleOutlineOnImage(uint32(uintptr(unsafe.Pointer(&color))), destination, thickness, x1, x2, x3, y1, y2, y3)
+}
 
 // Copy a font to a new font.
-//go:wasmimport null0 font_copy
-func FontCopy(font uint32) uint32
+func FontCopy(font uint32) uint32 {
+	return fontCopy(font)
+}
 
 // Scale a font, return a new font.
-//go:wasmimport null0 font_scale
-func FontScale(filter uint32, font uint32, scaleX float32, scaleY float32) uint32
+func FontScale(filter ImageFilter, font uint32, scaleX float32, scaleY float32) uint32 {
+	return fontScale(uint32(filter), font, scaleX, scaleY)
+}
 
 // Is the button currently down?
-//go:wasmimport null0 gamepad_button_down
-func GamepadButtonDown(button uint32, gamepad int32) bool
+func GamepadButtonDown(button GamepadButton, gamepad int32) bool {
+	return gamepadButtonDown(uint32(button), gamepad)
+}
 
 // Has the button been pressed? (tracks unpress/read correctly.)
-//go:wasmimport null0 gamepad_button_pressed
-func GamepadButtonPressed(button uint32, gamepad int32) bool
+func GamepadButtonPressed(button GamepadButton, gamepad int32) bool {
+	return gamepadButtonPressed(uint32(button), gamepad)
+}
 
 // Has the button been released? (tracks press/read correctly.)
-//go:wasmimport null0 gamepad_button_released
-func GamepadButtonReleased(button uint32, gamepad int32) bool
+func GamepadButtonReleased(button GamepadButton, gamepad int32) bool {
+	return gamepadButtonReleased(uint32(button), gamepad)
+}
 
 // Calculate a rectangle representing the available alpha border in an image.
-//go:wasmimport null0 image_alpha_border
-func ImageAlphaBorder(image uint32, threshold float32) uint32
+func ImageAlphaBorder(image uint32, threshold float32) Rectangle {
+	var result Rectangle
+	resultPtr := imageAlphaBorder(image, threshold)
+	if resultPtr != 0 {
+		result = *(*Rectangle)(unsafe.Pointer(uintptr(resultPtr)))
+	}
+	return result
+}
 
 // Crop an image based on the alpha border, in-place.
-//go:wasmimport null0 image_alpha_crop
-func ImageAlphaCrop(image uint32, threshold float32)
+func ImageAlphaCrop(image uint32, threshold float32) {
+	imageAlphaCrop(image, threshold)
+}
 
 // Use an image as an alpha-mask on another image.
-//go:wasmimport null0 image_alpha_mask
-func ImageAlphaMask(alphaMask uint32, image uint32, posX int32, posY int32)
+func ImageAlphaMask(alphaMask uint32, image uint32, posX int32, posY int32) {
+	imageAlphaMask(alphaMask, image, posX, posY)
+}
 
 // Adjust the brightness of an image, in-place.
-//go:wasmimport null0 image_color_brightness
-func ImageColorBrightness(factor float32, image uint32)
+func ImageColorBrightness(factor float32, image uint32) {
+	imageColorBrightness(factor, image)
+}
 
 // Change the contrast of an image, in-place.
-//go:wasmimport null0 image_color_contrast
-func ImageColorContrast(contrast float32, image uint32)
+func ImageColorContrast(contrast float32, image uint32) {
+	imageColorContrast(contrast, image)
+}
 
 // Fade a color in an image, in-place.
-//go:wasmimport null0 image_color_fade
-func ImageColorFade(alpha float32, image uint32)
+func ImageColorFade(alpha float32, image uint32) {
+	imageColorFade(alpha, image)
+}
 
 // Invert the colors in an image, in-place.
-//go:wasmimport null0 image_color_invert
-func ImageColorInvert(image uint32)
+func ImageColorInvert(image uint32) {
+	imageColorInvert(image)
+}
 
 // Replace a color in an image, in-place.
-//go:wasmimport null0 image_color_replace
-func ImageColorReplace(color uint32, image uint32, replace uint32)
+func ImageColorReplace(color Color, image uint32, replace Color) {
+	imageColorReplace(uint32(uintptr(unsafe.Pointer(&color))), image, uint32(uintptr(unsafe.Pointer(&replace))))
+}
 
 // Tint a color in an image, in-place.
-//go:wasmimport null0 image_color_tint
-func ImageColorTint(color uint32, image uint32)
+func ImageColorTint(color Color, image uint32) {
+	imageColorTint(uint32(uintptr(unsafe.Pointer(&color))), image)
+}
 
 // Copy an image to a new image.
-//go:wasmimport null0 image_copy
-func ImageCopy(image uint32) uint32
+func ImageCopy(image uint32) uint32 {
+	return imageCopy(image)
+}
 
 // Crop an image, in-place.
-//go:wasmimport null0 image_crop
-func ImageCrop(height int32, image uint32, width int32, x int32, y int32)
+func ImageCrop(height int32, image uint32, width int32, x int32, y int32) {
+	imageCrop(height, image, width, x, y)
+}
 
 // Flip an image, in-place.
-//go:wasmimport null0 image_flip
-func ImageFlip(horizontal bool, image uint32, vertical bool)
+func ImageFlip(horizontal bool, image uint32, vertical bool) {
+	imageFlip(horizontal, image, vertical)
+}
 
 // Create a new image of a gradient.
-//go:wasmimport null0 image_gradient
-func ImageGradient(bottomLeft uint32, bottomRight uint32, height int32, topLeft uint32, topRight uint32, width int32) uint32
+func ImageGradient(bottomLeft Color, bottomRight Color, height int32, topLeft Color, topRight Color, width int32) uint32 {
+	return imageGradient(uint32(uintptr(unsafe.Pointer(&bottomLeft))), uint32(uintptr(unsafe.Pointer(&bottomRight))), height, uint32(uintptr(unsafe.Pointer(&topLeft))), uint32(uintptr(unsafe.Pointer(&topRight))), width)
+}
 
 // Resize an image, return copy.
-//go:wasmimport null0 image_resize
-func ImageResize(filter uint32, image uint32, newHeight int32, newWidth int32) uint32
+func ImageResize(filter ImageFilter, image uint32, newHeight int32, newWidth int32) uint32 {
+	return imageResize(uint32(filter), image, newHeight, newWidth)
+}
 
 // Create a new image, rotating another image.
-//go:wasmimport null0 image_rotate
-func ImageRotate(degrees float32, filter uint32, image uint32) uint32
+func ImageRotate(degrees float32, filter ImageFilter, image uint32) uint32 {
+	return imageRotate(degrees, uint32(filter), image)
+}
 
 // Scale an image, return copy.
-//go:wasmimport null0 image_scale
-func ImageScale(filter uint32, image uint32, scaleX float32, scaleY float32) uint32
+func ImageScale(filter ImageFilter, image uint32, scaleX float32, scaleY float32) uint32 {
+	return imageScale(uint32(filter), image, scaleX, scaleY)
+}
 
 // Create an image from a region of another image.
-//go:wasmimport null0 image_subimage
-func ImageSubimage(height int32, image uint32, width int32, x int32, y int32) uint32
+func ImageSubimage(height int32, image uint32, width int32, x int32, y int32) uint32 {
+	return imageSubimage(height, image, width, x, y)
+}
 
 // Is the key currently down?
-//go:wasmimport null0 key_down
-func KeyDown(key uint32) bool
+func KeyDown(key Key) bool {
+	return keyDown(uint32(key))
+}
 
 // Has the key been pressed? (tracks unpress/read correctly.)
-//go:wasmimport null0 key_pressed
-func KeyPressed(key uint32) bool
+func KeyPressed(key Key) bool {
+	return keyPressed(uint32(key))
+}
 
 // Has the key been released? (tracks press/read correctly.)
-//go:wasmimport null0 key_released
-func KeyReleased(key uint32) bool
+func KeyReleased(key Key) bool {
+	return keyReleased(uint32(key))
+}
 
 // Is the key currently up?
-//go:wasmimport null0 key_up
-func KeyUp(key uint32) bool
+func KeyUp(key Key) bool {
+	return keyUp(uint32(key))
+}
 
 // Load a BMF font from a file in cart.
-//go:wasmimport null0 load_font_bmf
-func LoadFontBmf(characters uint32, filename uint32) uint32
+func LoadFontBmf(characters string, filename string) uint32 {
+	return loadFontBmf(uint32(uintptr(unsafe.Pointer(unsafe.StringData(characters)))), uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))))
+}
 
 // Load a BMF font from an image.
-//go:wasmimport null0 load_font_bmf_from_image
-func LoadFontBmfFromImage(characters uint32, image uint32) uint32
+func LoadFontBmfFromImage(characters string, image uint32) uint32 {
+	return loadFontBmfFromImage(uint32(uintptr(unsafe.Pointer(unsafe.StringData(characters)))), image)
+}
 
 // Load a TTF font from a file in cart.
-//go:wasmimport null0 load_font_ttf
-func LoadFontTtf(filename uint32, fontSize int32) uint32
+func LoadFontTtf(filename string, fontSize int32) uint32 {
+	return loadFontTtf(uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))), fontSize)
+}
 
 // Load a TTY font from a file in cart.
-//go:wasmimport null0 load_font_tty
-func LoadFontTty(characters uint32, filename uint32, glyphHeight int32, glyphWidth int32) uint32
+func LoadFontTty(characters string, filename string, glyphHeight int32, glyphWidth int32) uint32 {
+	return loadFontTty(uint32(uintptr(unsafe.Pointer(unsafe.StringData(characters)))), uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))), glyphHeight, glyphWidth)
+}
 
 // Load a TTY font from an image.
-//go:wasmimport null0 load_font_tty_from_image
-func LoadFontTtyFromImage(characters uint32, glyphHeight int32, glyphWidth int32, image uint32) uint32
+func LoadFontTtyFromImage(characters string, glyphHeight int32, glyphWidth int32, image uint32) uint32 {
+	return loadFontTtyFromImage(uint32(uintptr(unsafe.Pointer(unsafe.StringData(characters)))), glyphHeight, glyphWidth, image)
+}
 
 // Load an image from a file in cart.
-//go:wasmimport null0 load_image
-func LoadImage(filename uint32) uint32
+func LoadImage(filename string) uint32 {
+	return loadImage(uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))))
+}
 
 // Load a sound from a file in cart.
-//go:wasmimport null0 load_sound
-func LoadSound(filename uint32) uint32
+func LoadSound(filename string) uint32 {
+	return loadSound(uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))))
+}
 
 // Meaure an image (use 0 for screen).
-//go:wasmimport null0 measure_image
-func MeasureImage(image uint32) uint32
+func MeasureImage(image uint32) Dimensions {
+	var result Dimensions
+	resultPtr := measureImage(image)
+	if resultPtr != 0 {
+		result = *(*Dimensions)(unsafe.Pointer(uintptr(resultPtr)))
+	}
+	return result
+}
 
 // Measure the size of some text.
-//go:wasmimport null0 measure_text
-func MeasureText(font uint32, text uint32, textLength int32) uint32
+func MeasureText(font uint32, text string, textLength int32) Dimensions {
+	var result Dimensions
+	resultPtr := measureText(font, uint32(uintptr(unsafe.Pointer(unsafe.StringData(text)))), textLength)
+	if resultPtr != 0 {
+		result = *(*Dimensions)(unsafe.Pointer(uintptr(resultPtr)))
+	}
+	return result
+}
 
 // Is the button currently down?
-//go:wasmimport null0 mouse_button_down
-func MouseButtonDown(button uint32) bool
+func MouseButtonDown(button MouseButton) bool {
+	return mouseButtonDown(uint32(button))
+}
 
 // Has the button been pressed? (tracks unpress/read correctly.)
-//go:wasmimport null0 mouse_button_pressed
-func MouseButtonPressed(button uint32) bool
+func MouseButtonPressed(button MouseButton) bool {
+	return mouseButtonPressed(uint32(button))
+}
 
 // Has the button been released? (tracks press/read correctly.)
-//go:wasmimport null0 mouse_button_released
-func MouseButtonReleased(button uint32) bool
+func MouseButtonReleased(button MouseButton) bool {
+	return mouseButtonReleased(uint32(button))
+}
 
 // Is the button currently up?
-//go:wasmimport null0 mouse_button_up
-func MouseButtonUp(button uint32) bool
+func MouseButtonUp(button MouseButton) bool {
+	return mouseButtonUp(uint32(button))
+}
 
 // Get current position of mouse.
-//go:wasmimport null0 mouse_position
-func MousePosition() uint32
+func MousePosition() Vector {
+	var result Vector
+	resultPtr := mousePosition()
+	if resultPtr != 0 {
+		result = *(*Vector)(unsafe.Pointer(uintptr(resultPtr)))
+	}
+	return result
+}
 
 // Create a new blank image.
-//go:wasmimport null0 new_image
-func NewImage(color uint32, height int32, width int32) uint32
+func NewImage(color Color, height int32, width int32) uint32 {
+	return newImage(uint32(uintptr(unsafe.Pointer(&color))), height, width)
+}
 
 // Play a sound.
-//go:wasmimport null0 play_sound
-func PlaySound(loop bool, sound uint32)
+func PlaySound(loop bool, sound uint32) {
+	playSound(loop, sound)
+}
 
 // Get a random integer between 2 numbers.
-//go:wasmimport null0 random_int
-func RandomInt(max int32, min int32) int32
+func RandomInt(max int32, min int32) int32 {
+	return randomInt(max, min)
+}
 
 // Get the random-seed.
-//go:wasmimport null0 random_seed_get
-func RandomSeedGet() uint64
+func RandomSeedGet() uint64 {
+	return randomSeedGet()
+}
 
 // Set the random-seed.
-//go:wasmimport null0 random_seed_set
-func RandomSeedSet(seed uint64)
+func RandomSeedSet(seed uint64) {
+	randomSeedSet(seed)
+}
 
 // Save an image to persistant storage.
-//go:wasmimport null0 save_image
-func SaveImage(filename uint32, image uint32)
+func SaveImage(filename string, image uint32) {
+	saveImage(uint32(uintptr(unsafe.Pointer(unsafe.StringData(filename)))), image)
+}
 
 // Create Sfx parameters.
-//go:wasmimport null0 sfx_generate
-func SfxGenerate(type_ uint32) uint32
+func SfxGenerate(type_ SfxPresetType) SfxParams {
+	var result SfxParams
+	resultPtr := sfxGenerate(uint32(type_))
+	if resultPtr != 0 {
+		result = *(*SfxParams)(unsafe.Pointer(uintptr(resultPtr)))
+	}
+	return result
+}
 
 // Create Sfx sound.
-//go:wasmimport null0 sfx_sound
-func SfxSound(params uint32) uint32
+func SfxSound(params SfxParams) uint32 {
+	return sfxSound(uint32(uintptr(unsafe.Pointer(&params))))
+}
 
 // Stop a sound.
-//go:wasmimport null0 stop_sound
-func StopSound(sound uint32)
+func StopSound(sound uint32) {
+	stopSound(sound)
+}
 
 // Speak some text and return a sound. Set things to 0 for defaults.
-//go:wasmimport null0 tts_sound
-func TtsSound(mouth int32, phonetic bool, pitch int32, sing bool, speed int32, text uint32, throat int32) uint32
+func TtsSound(mouth int32, phonetic bool, pitch int32, sing bool, speed int32, text string, throat int32) uint32 {
+	return ttsSound(mouth, phonetic, pitch, sing, speed, uint32(uintptr(unsafe.Pointer(unsafe.StringData(text)))), throat)
+}
 
 // Unload a font.
-//go:wasmimport null0 unload_font
-func UnloadFont(font uint32)
+func UnloadFont(font uint32) {
+	unloadFont(font)
+}
 
 // Unload an image.
-//go:wasmimport null0 unload_image
-func UnloadImage(image uint32)
+func UnloadImage(image uint32) {
+	unloadImage(image)
+}
 
 // Unload a sound.
-//go:wasmimport null0 unload_sound
-func UnloadSound(sound uint32)
+func UnloadSound(sound uint32) {
+	unloadSound(sound)
+}
 

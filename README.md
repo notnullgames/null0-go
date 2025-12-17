@@ -77,4 +77,4 @@ This generates:
 1. **`cartapi/null0.go`** - Go package with types, enums, and `//go:wasmimport null0 <func>` declarations
 2. **`host/null0_api.go`** - Host-side function stubs (currently just prints debug messages)
 
-The generator converts snake_case function names to PascalCase for Go exports (e.g., `delta_time` → `DeltaTime`), while preserving the original names in the wasmimport directives (so it will work with carts already made in other languages.)
+The generator converts snake_case function names to PascalCase for Go exports (e.g., `delta_time` → `DeltaTime`), while preserving the original names in the wasmimport directives (so it will work with carts/host already made in other languages.)

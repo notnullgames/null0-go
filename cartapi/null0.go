@@ -72,44 +72,44 @@ type Color struct {
 
 // The 2D size of something (width/height.)
 type Dimensions struct {
-	Width int32
 	Height int32
+	Width int32
 }
 
 // The 2D position + size of something (x/y/w/h.)
 type Rectangle struct {
+	X int32
 	Y int32
 	Width int32
 	Height int32
-	X int32
 }
 
 // Sfx parameters.
 type SfxParams struct {
 	VibratoSpeed float32
-	RepeatSpeed float32
-	PhaserSweep float32
-	StartFrequency float32
-	ChangeAmount float32
-	SquareDuty float32
-	DutySweep float32
-	LpfResonance float32
-	HpfCutoff float32
-	HpfCutoffSweep float32
-	RandSeed uint32
-	DecayTime float32
-	DeltaSlide float32
-	VibratoDepth float32
-	LpfCutoff float32
-	LpfCutoffSweep float32
 	WaveType int32
 	AttackTime float32
-	SustainTime float32
+	DecayTime float32
+	MinFrequency float32
+	SquareDuty float32
+	RepeatSpeed float32
+	PhaserSweep float32
 	SustainPunch float32
 	ChangeSpeed float32
+	DutySweep float32
 	PhaserOffset float32
-	MinFrequency float32
+	LpfCutoffSweep float32
+	LpfResonance float32
+	HpfCutoffSweep float32
+	RandSeed uint32
 	Slide float32
+	DeltaSlide float32
+	VibratoDepth float32
+	SustainTime float32
+	StartFrequency float32
+	ChangeAmount float32
+	LpfCutoff float32
+	HpfCutoff float32
 }
 
 // The 2D position of something (x/y.)
@@ -588,6 +588,9 @@ func sfxSound(params uint32) uint32
 
 //go:wasmimport null0 stop_sound
 func stopSound(sound uint32)
+
+//go:wasmimport null0 trace
+func trace(message uint32)
 
 //go:wasmimport null0 tts_sound
 func ttsSound(mouth int32, phonetic bool, pitch int32, sing bool, speed int32, text uint32, throat int32) uint32
@@ -1101,6 +1104,11 @@ func SfxSound(params SfxParams) uint32 {
 // Stop a sound.
 func StopSound(sound uint32) {
 	stopSound(sound)
+}
+
+// Print a message to the console for debugging.
+func Trace(message string) {
+	trace(uint32(uintptr(unsafe.Pointer(unsafe.StringData(message)))))
 }
 
 // Speak some text and return a sound. Set things to 0 for defaults.

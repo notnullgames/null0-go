@@ -1057,6 +1057,44 @@ func registerNull0API(builder wazero.HostModuleBuilder) {
 		).
 		Export("stop_sound")
 
+	// trace: Print a message to the console for debugging.
+	builder.NewFunctionBuilder().
+		WithGoModuleFunction(
+			api.GoModuleFunc(func(ctx context.Context, mod api.Module, stack []uint64) {
+				// Read string pointer from stack
+				ptr := uint32(stack[0])
+				if ptr == 0 {
+					return
+				}
+
+				// Read string from WASM memory (assuming null-terminated or length-prefixed)
+				// For now, read until we hit a null byte
+				mem := mod.Memory()
+				buf, ok := mem.Read(ptr, 1024) // Read up to 1KB
+				if !ok {
+					fmt.Println("[trace] Failed to read message from memory")
+					return
+				}
+
+				// Find null terminator
+				length := 0
+				for i, b := range buf {
+					if b == 0 {
+						length = i
+						break
+					}
+				}
+				if length == 0 {
+					length = len(buf)
+				}
+
+				fmt.Println("[trace]", string(buf[:length]))
+			}),
+			[]api.ValueType{api.ValueTypeI32},
+			nil,
+		).
+		Export("trace")
+
 	// tts_sound: Speak some text and return a sound. Set things to 0 for defaults.
 	builder.NewFunctionBuilder().
 		WithGoModuleFunction(
